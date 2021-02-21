@@ -1,0 +1,39 @@
+import numpy as np
+import face_recognition as fg
+import cv2 as cv
+import os
+path = "Images"
+images = []
+classNames = []
+myList = os.listdir(path)
+
+for cls in myList:
+    curImg = cv.imread(f'{​​​​​​​path}​​​​​​​/{​​​​​​​cls}​​​​​​​')
+    images.append(curImg)
+    classNames.append(os.path.splitext(cls)[0])
+
+def findEncodings(images):
+    encodedList = []
+    for img in images:
+        img = cv.cvtColor(img,cv.COLOR_BGR2RGB)
+        encode = fg.face_encodings(img)[0]
+        encodedList.append(encode)
+    return encodedList
+
+encodeListKnown = findEncodings(images)
+#print(len(encodeListKnown))
+cap = cv.VideoCapture(0)
+
+while True:
+    _,imgWebcam = cap.read()
+    imgSmall = cv.resize(imgWebcam,(0,0),None,0.25,0.25)
+    imgSmall = cv.cvtColor(imgSmall,cv.COLOR_BGR2RGB)
+    faceCurFrame = fg.face_locations(imgSmall)
+    encodeFaceCurFrame = fg.face_encodings(imgSmall,faceCurFrame)
+
+    for encodeFace,faceLoc in zip(encodeFaceCurFrame,faceCurFrame):
+        matches = fg.compare_faces(encodeListKnown,encodeFace)
+        faceDistances = fg.face_distance(encodeListKnown,encodeFace)
+
+
+#print(faceDistances)
